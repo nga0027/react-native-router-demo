@@ -13,7 +13,7 @@ const app = () => {
               <Text style={styles.buttonText}>Our Menu</Text>
             </Pressable>
           </Link>
-          <Link style={{marginHorizontal: 'auto'}} href='/contact' asChild>
+          <Link style={{marginHorizontal: 'auto'}} href='/contact2' asChild>
             <Pressable style={styles.button}>
               <Text style={styles.buttonText}>Contact Us</Text>
             </Pressable>
