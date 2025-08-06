@@ -8,6 +8,11 @@ const app = () => {
     <View style={styles.container}>
         <ImageBackground source={icedCoffeeImg} resizeMode='cover' style={styles.image}>
           <Text style={styles.title}>Coffee Shop</Text>
+          <Link style={{marginHorizontal: 'auto'}} href='/menu' asChild>
+            <Pressable style={styles.button}>
+              <Text style={styles.buttonText}>Our Menu</Text>
+            </Pressable>
+          </Link>
           <Link style={{marginHorizontal: 'auto'}} href='/contact' asChild>
             <Pressable style={styles.button}>
               <Text style={styles.buttonText}>Contact Us</Text>
@@ -50,9 +55,11 @@ const styles = StyleSheet.create({
       },
     button: {
       height: 60,
+      width: 150,
       borderRadius: 20,
       justifyContent: 'center',
-      backgroundColor: 'rgba(0,0,0,0.75)'
+      backgroundColor: 'rgba(0,0,0,0.75)',
+      marginBottom: 50
     },
     buttonText: {
         color: 'white',
