@@ -1,4 +1,4 @@
-import { Text, TextInput, View, TouchableOpacity, Button, Platform, ScrollView, FlatList } from "react-native";
+import { Text, TextInput, View, TouchableOpacity, Button, Platform, ScrollView, FlatList, Appearance } from "react-native";
 import React, { useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
@@ -13,8 +13,10 @@ export default function Index() {
   const [addTaskText, setAddTaskText] = useState('')
 
   const addTask = () => {
-    const newItem = {'id': tasks.at(-1).id + 1, 'title': addTaskText, 'completed': false}
-    setTasks([...tasks, newItem])
+    if (addTaskText) {
+      const newItem = {'id': tasks.at(-1).id + 1, 'title': addTaskText, 'completed': false}
+      setTasks([...tasks, newItem])
+    }
   }
 
   const toggleCompleted = (item) => {
@@ -34,7 +36,9 @@ export default function Index() {
     <View style={styles.container}>
       <View style = {styles.addTaskForm}>
         <TextInput style = {styles.addTaskInput} onChangeText={setAddTaskText} />
-        <Button style = {styles.addTaskButton} title = 'Add' onPress={addTask} />
+        <TouchableOpacity style = {styles.addTaskButton} onPress={addTask}>
+          <Text>Add</Text>
+        </TouchableOpacity>
       </View>
       <ListContainer>
         <FlatList
@@ -44,9 +48,9 @@ export default function Index() {
           contentContainerStyle = {styles.contentContainer}
           renderItem={({item}) => (
             <View style = {styles.taskRow}>
-              <Text style={[styles.taskDescription, item.completed ? styles.taskCompleted : null]}>{item.title}</Text>
+              <Text style={[styles.taskDescription, item.completed ? styles.taskCompleted : styles.taskUncompleted]}>{item.title}</Text>
               <TouchableOpacity style={styles.deleteTaskButton} onPress={() => toggleCompleted(item)}>
-                <MaterialIcons name="delete" size={24} color="black" />
+                <MaterialIcons name="delete" size={24} color={theme.iconColor} />
               </TouchableOpacity>
             </View>
           )}
@@ -56,9 +60,29 @@ export default function Index() {
   );
 }
 
+const ColorThemes = {
+  light: {
+    borderColor: 'black',
+    backgroundColor: 'white',
+    textColor: 'black',
+    buttonColor: 'lightblue',
+    iconColor: 'white'
+  },
+  dark: {
+    borderColor: 'white',
+    backgroundColor: 'black',
+    textColor: 'white',
+    buttonColor: 'white',
+    iconColor: 'black'
+  }
+}
+const colorScheme = Appearance.getColorScheme()
+const theme = colorScheme === 'light' ? ColorThemes.light : ColorThemes.dark
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    backgroundColor: theme.backgroundColor
   },
 
   addTaskForm: {
@@ -68,23 +92,27 @@ const styles = StyleSheet.create({
   },
 
   addTaskInput: {
-    borderColor: 'black',
+    borderColor: theme.borderColor,
     borderWidth: 1,
     borderRadius: 5,
     marginRight: 5,
-    width: '100%'
+    width: '100%',
+    color: theme.textColor,
+    fontSize: 15,
+    padding: 10
   },
 
   addTaskButton: {
     padding: 10,
-    borderRadius: 5
+    borderRadius: 5,
+    backgroundColor: theme.buttonColor
   },
 
   contentContainer: {
   },
 
   taskRow: {
-    borderBottomColor: 'white',
+    borderBottomColor: theme.borderColor,
     borderBottomWidth: 1,
     paddingVertical: 5,
     flexDirection: 'row',
@@ -100,6 +128,10 @@ const styles = StyleSheet.create({
   taskCompleted: {
     textDecorationLine: 'line-through',
     color: 'grey'
+  },
+
+  taskUncompleted: {
+    color: theme.textColor
   },
 
   deleteTaskButton: {
