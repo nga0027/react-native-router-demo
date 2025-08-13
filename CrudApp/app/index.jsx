@@ -5,37 +5,43 @@ import { StyleSheet } from "react-native";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import {data as TASKS} from '@/data/todos'
+import {ColorThemes} from '@/constants/ColorThemes'
 
 export default function Index() {
   const ListContainer = Platform.OS === 'web' ? ScrollView : SafeAreaView
 
-  const [tasks, setTasks] = useState(TASKS)
+  const [tasks, setTasks] = useState(TASKS.sort((a, b) => b.id - a.id))
   const [addTaskText, setAddTaskText] = useState('')
 
   const addTask = () => {
-    if (addTaskText) {
-      const newItem = {'id': tasks.at(-1).id + 1, 'title': addTaskText, 'completed': false}
-      setTasks([...tasks, newItem])
+    if (addTaskText.trim()) {
+      const newItem = {'id': tasks[0].id + 1, 'title': addTaskText.trim(), 'completed': false}
+      setTasks([newItem, ...tasks])
+      setAddTaskText('')
     }
   }
 
   const toggleCompleted = (item) => {
     const newTasks = tasks.map((iterItem) => {
-      if (iterItem.id === item.id) {
-        const newItem = {...iterItem}
-        newItem.completed = !iterItem.completed
-        return newItem
-      } else {
-        return iterItem
-      }
+      return iterItem.id === item.id ? {...iterItem, completed: !iterItem.completed} : iterItem
     })
     setTasks(newTasks)
   }
 
+  const deleteItem = (item) => {
+    const newTasks = tasks.filter(iterItem => iterItem.id !== item.id)
+    setTasks(newTasks)
+  }
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style = {styles.addTaskForm}>
-        <TextInput style = {styles.addTaskInput} onChangeText={setAddTaskText} />
+        <TextInput 
+          style = {styles.addTaskInput} 
+          onChangeText={setAddTaskText} 
+          value={addTaskText} 
+          placeholder="Add a task"
+          placeholderTextColor='grey'/>
         <TouchableOpacity style = {styles.addTaskButton} onPress={addTask}>
           <Text>Add</Text>
         </TouchableOpacity>
@@ -48,34 +54,25 @@ export default function Index() {
           contentContainerStyle = {styles.contentContainer}
           renderItem={({item}) => (
             <View style = {styles.taskRow}>
-              <Text style={[styles.taskDescription, item.completed ? styles.taskCompleted : styles.taskUncompleted]}>{item.title}</Text>
-              <TouchableOpacity style={styles.deleteTaskButton} onPress={() => toggleCompleted(item)}>
+              <Text 
+                style={[
+                  styles.taskDescription, 
+                  item.completed ? styles.taskCompleted : styles.taskUncompleted
+                ]}
+                onPress={() => toggleCompleted(item)}>
+                {item.title}
+              </Text>
+              <TouchableOpacity style={styles.deleteTaskButton} onPress={() => deleteItem(item)}>
                 <MaterialIcons name="delete" size={24} color={theme.iconColor} />
               </TouchableOpacity>
             </View>
           )}
         />
       </ListContainer>
-    </View>
+    </SafeAreaView>
   );
 }
 
-const ColorThemes = {
-  light: {
-    borderColor: 'black',
-    backgroundColor: 'white',
-    textColor: 'black',
-    buttonColor: 'lightblue',
-    iconColor: 'white'
-  },
-  dark: {
-    borderColor: 'white',
-    backgroundColor: 'black',
-    textColor: 'white',
-    buttonColor: 'white',
-    iconColor: 'black'
-  }
-}
 const colorScheme = Appearance.getColorScheme()
 const theme = colorScheme === 'light' ? ColorThemes.light : ColorThemes.dark
 
@@ -88,7 +85,11 @@ const styles = StyleSheet.create({
   addTaskForm: {
     flexDirection: 'row',
     paddingVertical: 5,
-    paddingHorizontal: 8
+    paddingHorizontal: 8,
+    marginBottom: 10,
+    width: '100%',
+    maxWidth: 1024,
+    marginHorizontal: 'auto'
   },
 
   addTaskInput: {
@@ -96,7 +97,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     marginRight: 5,
-    width: '100%',
+    // width: '100%',
+    flex: 1,
     color: theme.textColor,
     fontSize: 15,
     padding: 10
@@ -116,6 +118,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingVertical: 5,
     flexDirection: 'row',
+    maxWidth: 1024,
+    width: '100%',
+    marginHorizontal: 'auto',
     paddingHorizontal: 8,
     alignItems: 'center'
   },
