@@ -1,5 +1,6 @@
 import { Text, TextInput, View, TouchableOpacity, Button, Platform, ScrollView, FlatList, Appearance } from "react-native";
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { ThemeContext } from "@/context/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -7,11 +8,25 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import {data as TASKS} from '@/data/todos'
 import {ColorThemes} from '@/constants/ColorThemes'
 
+import {Inter_500Medium, useFonts} from '@expo-google-fonts/inter'
+import Octicons from '@expo/vector-icons/Octicons'
+
+
 export default function Index() {
   const ListContainer = Platform.OS === 'web' ? ScrollView : SafeAreaView
 
   const [tasks, setTasks] = useState(TASKS.sort((a, b) => b.id - a.id))
   const [addTaskText, setAddTaskText] = useState('')
+  const {colorScheme, setColorScheme, theme} = useContext(ThemeContext)
+  const styles = createStyles(theme)
+  
+  const [loaded, error] = useFonts({
+    Inter_500Medium
+  })
+
+  if (!loaded && !error) {
+    return null
+  }
 
   const addTask = () => {
     if (addTaskText.trim()) {
@@ -45,6 +60,13 @@ export default function Index() {
         <TouchableOpacity style = {styles.addTaskButton} onPress={addTask}>
           <Text>Add</Text>
         </TouchableOpacity>
+        <TouchableOpacity 
+          onPress={() => setColorScheme(colorScheme === 'dark' ? 'light' : 'dark')}
+          style={{marginLeft: 10}}>
+          {colorScheme === 'dark'
+            ? <Octicons name='moon' size = {36} color = {theme.textColor} style={{width: 36}}/>
+            : <Octicons name='sun' size = {36} color = {theme.textColor} style={{width: 36}}/>}
+        </TouchableOpacity>
       </View>
       <ListContainer>
         <FlatList
@@ -73,79 +95,83 @@ export default function Index() {
   );
 }
 
-const colorScheme = Appearance.getColorScheme()
-const theme = colorScheme === 'light' ? ColorThemes.light : ColorThemes.dark
+// const colorScheme = Appearance.getColorScheme()
+// const theme = colorScheme === 'light' ? ColorThemes.light : ColorThemes.dark
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.backgroundColor
-  },
+const createStyles = (theme) => {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.backgroundColor
+    },
 
-  addTaskForm: {
-    flexDirection: 'row',
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    marginBottom: 10,
-    width: '100%',
-    maxWidth: 1024,
-    marginHorizontal: 'auto'
-  },
+    addTaskForm: {
+      flexDirection: 'row',
+      paddingVertical: 5,
+      paddingHorizontal: 8,
+      marginBottom: 10,
+      width: '100%',
+      maxWidth: 1024,
+      marginHorizontal: 'auto'
+    },
 
-  addTaskInput: {
-    borderColor: theme.borderColor,
-    borderWidth: 1,
-    borderRadius: 5,
-    marginRight: 5,
-    // width: '100%',
-    flex: 1,
-    color: theme.textColor,
-    fontSize: 15,
-    padding: 10
-  },
+    addTaskInput: {
+      borderColor: theme.borderColor,
+      borderWidth: 1,
+      borderRadius: 5,
+      marginRight: 5,
+      // width: '100%',
+      flex: 1,
+      color: theme.textColor,
+      fontSize: 15,
+      fontFamily: 'Inter_500Medium',
+      padding: 10
+    },
 
-  addTaskButton: {
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: theme.buttonColor
-  },
+    addTaskButton: {
+      padding: 10,
+      borderRadius: 5,
+      backgroundColor: theme.buttonColor
+    },
 
-  contentContainer: {
-  },
+    contentContainer: {
+    },
 
-  taskRow: {
-    borderBottomColor: theme.borderColor,
-    borderBottomWidth: 1,
-    paddingVertical: 5,
-    flexDirection: 'row',
-    maxWidth: 1024,
-    width: '100%',
-    marginHorizontal: 'auto',
-    paddingHorizontal: 8,
-    alignItems: 'center'
-  },
+    taskRow: {
+      borderBottomColor: theme.borderColor,
+      borderBottomWidth: 1,
+      paddingVertical: 5,
+      flexDirection: 'row',
+      maxWidth: 1024,
+      width: '100%',
+      marginHorizontal: 'auto',
+      paddingHorizontal: 8,
+      alignItems: 'center'
+    },
 
-  taskDescription: {
-    flex: 1,
-    fontSize: 15
-  },
+    taskDescription: {
+      flex: 1,
+      fontSize: 15,
+      fontFamily: 'Inter_500Medium'
+    },
 
-  taskCompleted: {
-    textDecorationLine: 'line-through',
-    color: 'grey'
-  },
+    taskCompleted: {
+      textDecorationLine: 'line-through',
+      color: 'grey'
+    },
 
-  taskUncompleted: {
-    color: theme.textColor
-  },
+    taskUncompleted: {
+      color: theme.textColor
+    },
 
-  deleteTaskButton: {
-    backgroundColor: 'red',
-    padding: 5,
-    height: 36,
-    width: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
-})
+    deleteTaskButton: {
+      backgroundColor: 'red',
+      padding: 5,
+      height: 36,
+      width: 36,
+      borderRadius: 18,
+      justifyContent: 'center',
+      alignItems: 'center'
+    }
+  })
+}
