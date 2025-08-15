@@ -1,5 +1,5 @@
 import { Text, TextInput, View, TouchableOpacity, Button, Platform, ScrollView, FlatList, Appearance } from "react-native";
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { ThemeContext } from "@/context/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
@@ -9,7 +9,12 @@ import {data as TASKS} from '@/data/todos'
 import {ColorThemes} from '@/constants/ColorThemes'
 
 import {Inter_500Medium, useFonts} from '@expo-google-fonts/inter'
+import Animated, {LinearTransition} from 'react-native-reanimated'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 import Octicons from '@expo/vector-icons/Octicons'
+
+import {StatusBar} from 'expo-status-bar'
 
 
 export default function Index() {
@@ -19,10 +24,43 @@ export default function Index() {
   const [addTaskText, setAddTaskText] = useState('')
   const {colorScheme, setColorScheme, theme} = useContext(ThemeContext)
   const styles = createStyles(theme)
-  
+
   const [loaded, error] = useFonts({
     Inter_500Medium
   })
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem('TodoApp')
+        console.log('MY VALUE', jsonValue)
+        const storageTodos = jsonValue != null ? JSON.parse(jsonValue) : null
+        
+        if (storageTodos && storageTodos.length) {
+          setTasks(storageTodos.sort((a, b) => b.id - a.id))
+        } else {
+          setTasks([])
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    const storeData = async () => {
+      try {
+        const jsonValue = JSON.stringify(tasks)
+        await AsyncStorage.setItem('TodoApp', jsonValue)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    storeData()
+  }, [tasks])
 
   if (!loaded && !error) {
     return null
@@ -30,7 +68,8 @@ export default function Index() {
 
   const addTask = () => {
     if (addTaskText.trim()) {
-      const newItem = {'id': tasks[0].id + 1, 'title': addTaskText.trim(), 'completed': false}
+      const nextId = tasks.length ? tasks[0].id + 1 : 0
+      const newItem = {'id': nextId, 'title': addTaskText.trim(), 'completed': false}
       setTasks([newItem, ...tasks])
       setAddTaskText('')
     }
@@ -69,11 +108,13 @@ export default function Index() {
         </TouchableOpacity>
       </View>
       <ListContainer>
-        <FlatList
+        <Animated.FlatList
           data = {tasks}
           keyExtractor={item => item.id.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle = {styles.contentContainer}
+          itemLayoutAnimation = {LinearTransition}
+          keyboardDismissMode='on-drag'
           renderItem={({item}) => (
             <View style = {styles.taskRow}>
               <Text 
@@ -91,6 +132,7 @@ export default function Index() {
           )}
         />
       </ListContainer>
+      <StatusBar style={colorScheme === 'light' ? 'dark' : 'light'}/>
     </SafeAreaView>
   );
 }
