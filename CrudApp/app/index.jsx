@@ -1,5 +1,6 @@
 import { Text, TextInput, View, TouchableOpacity, Button, Platform, ScrollView, FlatList, Appearance } from "react-native";
 import React, { useState, useContext, useEffect } from 'react';
+import { useRouter } from "expo-router";
 import { ThemeContext } from "@/context/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
@@ -28,6 +29,8 @@ export default function Index() {
   const [loaded, error] = useFonts({
     Inter_500Medium
   })
+
+  const router = useRouter()
   
   useEffect(() => {
     const fetchData = async () => {
@@ -87,11 +90,16 @@ export default function Index() {
     setTasks(newTasks)
   }
 
+  const handlePress = (item) => {
+    router.push(`/todos/${item.id}`)
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style = {styles.addTaskForm}>
         <TextInput 
           style = {styles.addTaskInput} 
+          maxLength={30}
           onChangeText={setAddTaskText} 
           value={addTaskText} 
           placeholder="Add a task"
@@ -117,14 +125,19 @@ export default function Index() {
           keyboardDismissMode='on-drag'
           renderItem={({item}) => (
             <View style = {styles.taskRow}>
-              <Text 
-                style={[
-                  styles.taskDescription, 
-                  item.completed ? styles.taskCompleted : styles.taskUncompleted
-                ]}
-                onPress={() => toggleCompleted(item)}>
-                {item.title}
-              </Text>
+              <TouchableOpacity
+                style = {styles.taskDescription}
+                onLongPress={() => toggleCompleted(item)}
+                onPress = {() => handlePress(item)}
+              >
+                <Text 
+                  style={[
+                    item.completed ? styles.taskCompleted : styles.taskUncompleted
+                  ]}
+                >
+                  {item.title}
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.deleteTaskButton} onPress={() => deleteItem(item)}>
                 <MaterialIcons name="delete" size={24} color={theme.iconColor} />
               </TouchableOpacity>
@@ -161,7 +174,7 @@ const createStyles = (theme) => {
       borderColor: theme.borderColor,
       borderWidth: 1,
       borderRadius: 5,
-      marginRight: 5,
+      marginRight: 10,
       // width: '100%',
       flex: 1,
       color: theme.textColor,
